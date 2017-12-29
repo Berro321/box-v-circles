@@ -3,18 +3,28 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include "Player.h"
+#include "Colors.h"
 
 //Constants
 const int FPS = 60;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
+/*TODO: 12/29/17
+ *	1. MAKE ARENA CLASS
+ *  2. MAKE PLAYER CLASS
+ *  3. MAKE PLAYABLE DEMO WHERE PLAYER CAN MOVE IN ARENA
+ *		IMPLEMENT GAME LOOP + CONTROLS
+ *		IMPLEMENT BASIC OUT OF BOUNDS COLLISION
+ * 
+ * TODO: 12//17
+ *	1. FIND A BETTER WAY TO STORE COLORS GLOBALLY
+ *	2. MAKE SQUARE AND CIRCLE COLLIDER CLASS
+*/
+
+
 int main(int argc, char **argv) {
-	//Variables
-	ALLEGRO_DISPLAY *display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
-	ALLEGRO_FONT *font = al_create_builtin_font();
-
-
 	//Setup initializations
 	if (!al_init()) {
 		fprintf(stderr, "Unable to initialize allegro");
@@ -33,12 +43,60 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	//TODO: Game loop
-	al_clear_to_color(al_map_rgb(0, 0, 0));
-	al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "HI!");
-	al_flip_display();
-	al_rest(2.0);
+	//ALLEGRO Variables
+	ALLEGRO_DISPLAY *display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
+	ALLEGRO_FONT *font = al_create_builtin_font();
+	ALLEGRO_TIMER *gameTimer = al_create_timer(1.0 / FPS);
+	ALLEGRO_EVENT_QUEUE *event_queue = al_create_event_queue();
+	Colors colors; //contains colors
+
+	//GAME Variables
+	bool gameOver = false; //Keeps track if game is over
+	bool redraw = false; //Draw game
+	Player *player = new Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 50, 50, 5);
+
+	//Registering events + setting up controls/timers
+	al_install_keyboard();
+
+	al_register_event_source(event_queue, al_get_timer_event_source(gameTimer));
+	al_register_event_source(event_queue, al_get_keyboard_event_source());
+
+	al_start_timer(gameTimer);
+
+	//GAME LOOP
+	while (!gameOver) {
+		ALLEGRO_EVENT ev;
+		al_wait_for_event(event_queue, &ev);
+
+		if (ev.type == ALLEGRO_EVENT_TIMER && ev.timer.source == gameTimer)
+			//Every frame, the game should update
+			redraw = true;
+		else if (ev.type == ALLEGRO_EVENT_KEY_DOWN || ALLEGRO_EVENT_KEY_UP) {
+			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+				gameOver = true;
+			//Pass to player to update their movement if keyboard press
+			player->updateKeys(ev);
+		}
+
+		if (redraw) {
+			//Update Physics
+			player->updatePosition();
+			
+			//Draw
+			al_clear_to_color(colors.BLACK);
+			player->draw();
+			al_flip_display();
+			redraw = false;
+		}
+
+	}
+
+	//Take care of garbage (IT'S GARBAGE DAYYY)
 	al_destroy_display(display);
+	al_destroy_font(font);
+	al_destroy_timer(gameTimer);
+	delete player;
+
 	return 0;
 
 }
