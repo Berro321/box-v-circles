@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	//Game loop
+	//TODO: Game loop
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 	al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "HI!");
 	al_flip_display();
