@@ -5,22 +5,24 @@
 #include <allegro5/allegro_primitives.h>
 #include "Player.h"
 #include "Colors.h"
+#include "Arena.h"
 
 //Constants
 const int FPS = 60;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-/*TODO: 12/29/17
+/*DONE: 12/29/17
  *	1. MAKE ARENA CLASS
  *  2. MAKE PLAYER CLASS
  *  3. MAKE PLAYABLE DEMO WHERE PLAYER CAN MOVE IN ARENA
  *		IMPLEMENT GAME LOOP + CONTROLS
- *		IMPLEMENT BASIC OUT OF BOUNDS COLLISION
+ *		IMPLEMENT TEMPORARY OUT OF BOUNDS COLLISION
  * 
  * TODO: 12//17
- *	1. FIND A BETTER WAY TO STORE COLORS GLOBALLY
+ *	1. (OPT) FIND A BETTER WAY TO STORE COLORS GLOBALLY 
  *	2. MAKE SQUARE AND CIRCLE COLLIDER CLASS
+ *	3. MAKE CAMERA CLASS AND ADJUST CODE ACCORDINGLY
 */
 
 
@@ -53,7 +55,11 @@ int main(int argc, char **argv) {
 	//GAME Variables
 	bool gameOver = false; //Keeps track if game is over
 	bool redraw = false; //Draw game
+
+	//Creating arena (May change so it can support multiple levels)
+	Arena *arena = new Arena(SCREEN_WIDTH, SCREEN_HEIGHT);
 	Player *player = new Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 50, 50, 5);
+	arena->setPlayer(player);
 
 	//Registering events + setting up controls/timers
 	al_install_keyboard();
@@ -75,16 +81,16 @@ int main(int argc, char **argv) {
 			if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
 				gameOver = true;
 			//Pass to player to update their movement if keyboard press
-			player->updateKeys(ev);
+			arena->getPlayer()->updateKeys(ev);
 		}
 
 		if (redraw) {
 			//Update Physics
-			player->updatePosition();
+			arena->getPlayer()->updatePosition();
 			
 			//Draw
 			al_clear_to_color(colors.BLACK);
-			player->draw();
+			arena->getPlayer()->draw();
 			al_flip_display();
 			redraw = false;
 		}

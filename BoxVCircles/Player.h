@@ -3,16 +3,21 @@
 
 #include <allegro5\allegro_primitives.h>
 #include "Colors.h"
+#include "Arena.h"
+
+class Arena;
 
 class Player {
 public:
 	Player(int sx, int sy, int w, int h, int s);
+	//Player(int sx, int sy, int w, int h, int s, Arena* arena);
 	void draw();
 	
 	//Mutators
 	void updateKeys(ALLEGRO_EVENT &ev); //Take care of keys
 	void updatePosition(); //Take care of physics update
 	void changeSpeed(int ns);
+	void setArena(Arena* arena);
 
 	//Accessors
 	int getWidth();
@@ -20,9 +25,10 @@ public:
 	int getPosX();
 	int getPosY();
 	int getMoveSpeed();
+	Arena* getArena();
 
 private:
-	//Arena *m_arena;
+	Arena *m_arena;
 	int m_pos_x;
 	int m_pos_y;
 	int m_width;

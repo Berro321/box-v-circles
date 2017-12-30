@@ -7,11 +7,18 @@ Player::Player(int sx, int sy,int w, int h, int s) {
 	m_height = h;
 	m_speed = s;
 
+	m_arena = nullptr;
+
 	//Allegro stuff TODO: ERROR CHECKING
 	al_init_primitives_addon();
 	if(! al_is_keyboard_installed())
 		al_install_keyboard();
 }
+
+/*Player::Player(int sx, int sy, int w, int h, int s, Arena* arena) {
+	Player(sx, sy, w, h, s);
+	m_arena = arena;
+}*/
 
 //Draw the player
 void Player::draw() {
@@ -72,17 +79,21 @@ void Player::updatePosition() {
 	//START
 	if (m_pos_x < 0)
 		m_pos_x = 0;
-	else if (m_pos_x + m_width > 800)
-		m_pos_x = 800 - m_width;
+	else if (m_pos_x + m_width > m_arena->getWidth())
+		m_pos_x = m_arena->getWidth() - m_width;
 	if (m_pos_y < 0)
 		m_pos_y = 0;
-	else if (m_pos_y + m_height> 600)
-		m_pos_y = 600 - m_height;
+	else if (m_pos_y + m_height > m_arena->getHeight())
+		m_pos_y = m_arena->getHeight() - m_height;
 	//END
 }
 
 void Player::changeSpeed(int ns) {
 	m_speed = ns;
+}
+
+void Player::setArena(Arena* arena) {
+	m_arena = arena;
 }
 
 //Accessors
@@ -100,4 +111,7 @@ int Player::getPosY() {
 }
 int Player::getMoveSpeed() {
 	return m_speed;
+}
+Arena* Player::getArena() {
+	return m_arena;
 }
