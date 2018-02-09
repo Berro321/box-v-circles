@@ -6,11 +6,17 @@
 #include "Player.h"
 #include "Colors.h"
 #include "Arena.h"
+#include "Wall.h"
+#include "Camera.h"
 
 //Constants
 const int FPS = 60;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+
+//Size for now
+const int ARENA_WIDTH = 2000;
+const int ARENA_HEIGHT = 3000;
 
 /*DONE: 12/29/17
  *	1. MAKE ARENA CLASS
@@ -19,10 +25,19 @@ const int SCREEN_HEIGHT = 600;
  *		IMPLEMENT GAME LOOP + CONTROLS
  *		IMPLEMENT TEMPORARY OUT OF BOUNDS COLLISION
  * 
- * TODO: 12//17
- *	1. (OPT) FIND A BETTER WAY TO STORE COLORS GLOBALLY 
- *	2. MAKE SQUARE AND CIRCLE COLLIDER CLASS
- *	3. MAKE CAMERA CLASS AND ADJUST CODE ACCORDINGLY
+ * COMPLETED: 2/8/18 
+ *	1. MAKE RECTANGLE COLLIDER CLASS
+ *		TEST IT ON PLACEHOLDERS (walls)
+ *		IMPLEMENT TO PLAYER CLASS
+ *	2. MAKE CAMERA CLASS AND ADJUST CODE ACCORDINGLY
+	3. MAKE PLAYABLE DEMO WHERE CAMERA FOLLOWS CHARACTER MOVEMENT AROUND AND COLLIDES AGAINST A THICK AND THIN WALLS
+ *	3. --(OPT) FIND A BETTER WAY TO STORE COLORS GLOBALLY-- *
+ *
+ * TODO:
+ *  1. MAKE A CIRCLE COLLIDER CLASS
+ *		TEST IT ON A RECTANGLE COLLIDER AND ANOTHER CIRCLE COLLIDER
+ *	2. ADD A CURSOR TO FOLLOW MOUSE
+ *	3.
 */
 
 
@@ -57,9 +72,17 @@ int main(int argc, char **argv) {
 	bool redraw = false; //Draw game
 
 	//Creating arena (May change so it can support multiple levels)
-	Arena *arena = new Arena(SCREEN_WIDTH, SCREEN_HEIGHT);
-	Player *player = new Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 50, 50, 5);
+	Arena *arena = new Arena(ARENA_WIDTH, ARENA_HEIGHT);
+	//NOTE: Entities in the arena are spawned in a location RELATIVE to arena's position
+	//not the screen's
+	Player *player = new Player(ARENA_WIDTH / 2, ARENA_HEIGHT / 2, 50, 50, 5);
 	arena->setPlayer(player);
+	//Creating camera to follow the player
+	Camera camera(arena, player, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	//TEMPORARY WALLS:: REMOVE LATER
+	arena->addWall(200, 200, 100, 50);
+	arena->addWall(1800, 2500, 10, 50);
 
 	//Registering events + setting up controls/timers
 	al_install_keyboard();
@@ -86,13 +109,19 @@ int main(int argc, char **argv) {
 
 		if (redraw) {
 			//Update Physics
-			arena->getPlayer()->updatePosition();
+			arena->update();
 			
-			//Draw
+			//Update camera to view objects in world properly
+			camera.Update();
+
+			//Draw to the screen
 			al_clear_to_color(colors.BLACK);
-			arena->getPlayer()->draw();
+			arena->draw();
 			al_flip_display();
 			redraw = false;
+
+			//Debugging stuff
+			fprintf(stdout, "Arena: Offset X: %d, Y: %d\n", arena->getOffsetX(), arena->getOffsetY());
 		}
 
 	}
@@ -101,7 +130,8 @@ int main(int argc, char **argv) {
 	al_destroy_display(display);
 	al_destroy_font(font);
 	al_destroy_timer(gameTimer);
-	delete player;
+	//delete player;
+	delete arena;
 
 	return 0;
 
